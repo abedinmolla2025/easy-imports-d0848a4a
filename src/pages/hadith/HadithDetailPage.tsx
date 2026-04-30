@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft,
+  ArrowRight,
   BookOpen,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
   ScrollText,
   Lightbulb,
@@ -49,6 +51,8 @@ const HadithDetailPage = () => {
   const navigate = useNavigate();
   const [hadith, setHadith] = useState<HadithRow | null>(null);
   const [related, setRelated] = useState<HadithRow[]>([]);
+  const [prevHadith, setPrevHadith] = useState<HadithRow | null>(null);
+  const [nextHadith, setNextHadith] = useState<HadithRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -88,6 +92,32 @@ const HadithDetailPage = () => {
         .lte("hadith_number", (data as any).hadith_number + 3)
         .limit(6);
       if (!cancelled && rel) setRelated(rel as unknown as HadithRow[]);
+
+      // Prev / Next navigation (same book)
+      const [{ data: prev }, { data: next }] = await Promise.all([
+        supabase
+          .from("hadiths")
+          .select("id, slug, book_key, chapter_id, hadith_number, arabic, bengali, english, urdu, topic_bn, explanation_bn, lessons_bn")
+          .eq("book_key", (data as any).book_key)
+          .lt("hadith_number", (data as any).hadith_number)
+          .not("slug", "is", null)
+          .order("hadith_number", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("hadiths")
+          .select("id, slug, book_key, chapter_id, hadith_number, arabic, bengali, english, urdu, topic_bn, explanation_bn, lessons_bn")
+          .eq("book_key", (data as any).book_key)
+          .gt("hadith_number", (data as any).hadith_number)
+          .not("slug", "is", null)
+          .order("hadith_number", { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      if (!cancelled) {
+        setPrevHadith((prev as unknown as HadithRow) ?? null);
+        setNextHadith((next as unknown as HadithRow) ?? null);
+      }
       setLoading(false);
     })();
     return () => {
