@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import { BookOpen, ScrollText, ChevronRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { BookOpen, ScrollText, ChevronRight, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,23 @@ export default function HadithPage() {
   });
 
   const hadithBooks = books ?? fallbackBooks;
+
+  // Featured hadiths — only fetch a small set with slug for SEO entry points
+  const { data: featured } = useQuery({
+    queryKey: ["hadith-featured-home"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("hadiths")
+        .select("id, slug, book_key, hadith_number, arabic, bengali")
+        .not("slug", "is", null)
+        .eq("book_key", "bukhari")
+        .in("hadith_number", [1, 2, 8, 10, 25, 52])
+        .limit(6);
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 1000 * 60 * 60,
+  });
 
   const handleBookClick = (book: typeof fallbackBooks[0]) => {
     if (book.id === "bukhari") {
@@ -148,6 +165,54 @@ export default function HadithPage() {
           </motion.button>
         ))}
       </div>
+
+      {/* Featured hadiths — SEO entry points */}
+      {featured && featured.length > 0 && (
+        <section className="mx-auto max-w-lg px-4 mt-10">
+          <div className="flex items-center gap-2 mb-4 px-1">
+            <Sparkles className="h-4 w-4 text-emerald-300" />
+            <h2
+              className="text-[15px] font-bold text-white"
+              style={{ fontFamily: "'Noto Sans Bengali', sans-serif" }}
+            >
+              নির্বাচিত হাদিস
+            </h2>
+          </div>
+          <div className="flex flex-col gap-3">
+            {featured.map((h: any, i: number) => (
+              <motion.div
+                key={h.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 * i }}
+                className="bg-white rounded-2xl p-4 shadow-md"
+              >
+                <p
+                  dir="rtl"
+                  className="text-[15px] text-gray-800 line-clamp-2 mb-1.5 text-right"
+                  style={{ fontFamily: "'Amiri', 'Noto Naskh Arabic', serif" }}
+                >
+                  {h.arabic}
+                </p>
+                {h.bengali && (
+                  <p
+                    className="text-[12.5px] text-gray-600 line-clamp-2 mb-3 leading-relaxed"
+                    style={{ fontFamily: "'Noto Sans Bengali', sans-serif" }}
+                  >
+                    {h.bengali}
+                  </p>
+                )}
+                <Link
+                  to={`/hadith/h/${h.slug}`}
+                  className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-700 hover:text-emerald-800"
+                >
+                  Read full hadith <ArrowRight className="h-3 w-3" />
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <BottomNavigation />
     </div>

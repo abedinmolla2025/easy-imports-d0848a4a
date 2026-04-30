@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { ArrowLeft, Search, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, ChevronRight, Loader2, BookOpen } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +19,7 @@ interface RawHadith {
   bengali?: string;
   english?: string;
   urdu?: string;
+  slug?: string | null;
 }
 
 interface Hadith {
@@ -27,6 +28,7 @@ interface Hadith {
   number: number;
   arabic: string;
   translation: string;
+  slug?: string | null;
 }
 
 interface Chapter {
@@ -49,6 +51,7 @@ const uiStrings = {
     error: "ডাটা লোড করতে সমস্যা হয়েছে",
     noResults: "কোনো হাদিস পাওয়া যায়নি",
     loadMore: "আরও দেখুন",
+    readDetails: "📖 বিস্তারিত পড়ুন",
   },
   english: {
     title: "Sahih Al-Bukhari",
@@ -63,6 +66,7 @@ const uiStrings = {
     error: "Failed to load data",
     noResults: "No hadiths found",
     loadMore: "Load More",
+    readDetails: "📖 Read full details",
   },
   urdu: {
     title: "صحیح البخاری",
@@ -77,6 +81,7 @@ const uiStrings = {
     error: "ڈیٹا لوڈ نہیں ہو سکا",
     noResults: "کوئی حدیث نہیں ملی",
     loadMore: "مزید لوڈ کریں",
+    readDetails: "📖 تفصیل پڑھیں",
   },
 } as const;
 
@@ -237,7 +242,7 @@ async function loadFromDb(dbField: string): Promise<Hadith[]> {
   while (hasMore) {
     const { data, error } = await (supabase as any)
       .from("hadiths")
-      .select("id, chapter_id, hadith_number, arabic, " + dbField)
+      .select("id, chapter_id, hadith_number, arabic, slug, " + dbField)
       .eq("book_key", "bukhari")
       .order("hadith_number", { ascending: true })
       .range(from, from + batchSize - 1);
@@ -256,6 +261,7 @@ async function loadFromDb(dbField: string): Promise<Hadith[]> {
           number: row.hadith_number,
           arabic: row.arabic,
           translation: row[dbField],
+          slug: row.slug ?? null,
         });
       }
     }
@@ -363,6 +369,7 @@ export default function BukhariLangPage() {
               number: h.hadith_number,
               arabic: h.arabic,
               translation: (h as any)[field] || "",
+              slug: (h as any).slug ?? null,
             }));
           processHadiths(mapped);
         })
@@ -531,6 +538,22 @@ export default function BukhariLangPage() {
                 <p className={`text-[16px] md:text-lg text-white leading-relaxed font-medium ${isRtl ? "text-right" : ""}`} dir={isRtl ? "rtl" : "ltr"}>{selectedHadith.translation}</p>
               </motion.div>
 
+              {/* Read full SEO details */}
+              <motion.a
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                href={`/hadith/h/${selectedHadith.slug || `bukhari-${selectedHadith.number}`}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(`/hadith/h/${selectedHadith.slug || `bukhari-${selectedHadith.number}`}`);
+                }}
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 text-white font-semibold border border-emerald-300/30 transition-colors"
+              >
+                <BookOpen className="w-4 h-4" />
+                {t.readDetails}
+              </motion.a>
+
               {/* Breadcrumb links */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-wrap gap-2 text-sm items-center">
                 <a href={`/hadith/sahih-bukhari/${slug}`} onClick={(e) => { e.preventDefault(); navigate(`/hadith/sahih-bukhari/${slug}`); }} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
@@ -587,18 +610,41 @@ export default function BukhariLangPage() {
                 <div className="space-y-3">
                   {paginatedHadiths.length === 0 && <p className="text-center text-white/50 py-10">{t.noResults}</p>}
                   {paginatedHadiths.map((hadith, index) => (
-                    <motion.button key={hadith.id} initial={index < PAGE_SIZE ? { opacity: 0, y: 16 } : false} animate={{ opacity: 1, y: 0 }} transition={{ delay: index < PAGE_SIZE ? index * 0.015 : 0 }} onClick={() => openHadith(hadith)} className="w-full text-left bg-white/10 backdrop-blur-md rounded-2xl p-4 hover:bg-white/15 transition-all active:scale-[0.98] shadow-xl border border-white/20">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 border border-white/30">
-                          <span className="text-white font-bold text-sm">{hadith.number}</span>
+                    <motion.div
+                      key={hadith.id}
+                      initial={index < PAGE_SIZE ? { opacity: 0, y: 16 } : false}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index < PAGE_SIZE ? index * 0.015 : 0 }}
+                      className="bg-white/10 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/20"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => openHadith(hadith)}
+                        className="w-full text-left hover:opacity-90 transition-opacity active:scale-[0.99]"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 border border-white/30">
+                            <span className="text-white font-bold text-sm">{hadith.number}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white/50 text-xs line-clamp-1 mb-1 text-right" dir="rtl">{hadith.arabic}</p>
+                            <p className="text-white text-sm line-clamp-2 font-medium leading-relaxed" dir={isRtl ? "rtl" : "ltr"}>{hadith.translation}</p>
+                          </div>
+                          <ChevronRight className="text-white/50 flex-shrink-0 mt-1" size={18} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white/50 text-xs line-clamp-1 mb-1 text-right" dir="rtl">{hadith.arabic}</p>
-                          <p className="text-white text-sm line-clamp-2 font-medium leading-relaxed" dir={isRtl ? "rtl" : "ltr"}>{hadith.translation}</p>
-                        </div>
-                        <ChevronRight className="text-white/50 flex-shrink-0 mt-1" size={18} />
-                      </div>
-                    </motion.button>
+                      </button>
+                      <a
+                        href={`/hadith/h/${hadith.slug || `bukhari-${hadith.number}`}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate(`/hadith/h/${hadith.slug || `bukhari-${hadith.number}`}`);
+                        }}
+                        className="mt-3 inline-flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-100 text-xs font-semibold border border-emerald-300/30 transition-colors"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        {t.readDetails}
+                      </a>
+                    </motion.div>
                   ))}
                   {hasMore && (
                     <button onClick={() => setPage((p) => p + 1)} className="w-full py-4 mt-2 rounded-2xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/15 transition-all">

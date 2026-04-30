@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft,
+  ArrowRight,
   BookOpen,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
   ScrollText,
   Lightbulb,
@@ -49,6 +51,8 @@ const HadithDetailPage = () => {
   const navigate = useNavigate();
   const [hadith, setHadith] = useState<HadithRow | null>(null);
   const [related, setRelated] = useState<HadithRow[]>([]);
+  const [prevHadith, setPrevHadith] = useState<HadithRow | null>(null);
+  const [nextHadith, setNextHadith] = useState<HadithRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -88,6 +92,32 @@ const HadithDetailPage = () => {
         .lte("hadith_number", (data as any).hadith_number + 3)
         .limit(6);
       if (!cancelled && rel) setRelated(rel as unknown as HadithRow[]);
+
+      // Prev / Next navigation (same book)
+      const [{ data: prev }, { data: next }] = await Promise.all([
+        supabase
+          .from("hadiths")
+          .select("id, slug, book_key, chapter_id, hadith_number, arabic, bengali, english, urdu, topic_bn, explanation_bn, lessons_bn")
+          .eq("book_key", (data as any).book_key)
+          .lt("hadith_number", (data as any).hadith_number)
+          .not("slug", "is", null)
+          .order("hadith_number", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("hadiths")
+          .select("id, slug, book_key, chapter_id, hadith_number, arabic, bengali, english, urdu, topic_bn, explanation_bn, lessons_bn")
+          .eq("book_key", (data as any).book_key)
+          .gt("hadith_number", (data as any).hadith_number)
+          .not("slug", "is", null)
+          .order("hadith_number", { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      if (!cancelled) {
+        setPrevHadith((prev as unknown as HadithRow) ?? null);
+        setNextHadith((next as unknown as HadithRow) ?? null);
+      }
       setLoading(false);
     })();
     return () => {
@@ -387,6 +417,51 @@ const HadithDetailPage = () => {
             {bookLabel}, হাদিস নং {hadith.hadith_number}, অধ্যায় {hadith.chapter_id}
           </p>
         </section>
+
+        {/* Prev / Next navigation */}
+        {(prevHadith || nextHadith) && (
+          <nav
+            aria-label="Hadith navigation"
+            className="grid grid-cols-2 gap-3"
+          >
+            {prevHadith ? (
+              <Link
+                to={`/hadith/h/${prevHadith.slug}`}
+                className="flex items-center gap-2 p-4 rounded-2xl bg-card border hover:border-primary/40 transition"
+              >
+                <ChevronLeft className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    আগের হাদিস
+                  </div>
+                  <div className="text-sm font-medium text-foreground truncate">
+                    {bookLabel} {prevHadith.hadith_number}
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
+            {nextHadith ? (
+              <Link
+                to={`/hadith/h/${nextHadith.slug}`}
+                className="flex items-center justify-end gap-2 p-4 rounded-2xl bg-card border hover:border-primary/40 transition text-right"
+              >
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    পরবর্তী হাদিস
+                  </div>
+                  <div className="text-sm font-medium text-foreground truncate">
+                    {bookLabel} {nextHadith.hadith_number}
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </Link>
+            ) : (
+              <div />
+            )}
+          </nav>
+        )}
 
         {/* Related */}
         {related.length > 0 && (
