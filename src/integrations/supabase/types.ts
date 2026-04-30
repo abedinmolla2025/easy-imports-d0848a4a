@@ -822,10 +822,15 @@ export type Database = {
           chapter_id: number
           created_at: string
           english: string | null
+          explanation_bn: string | null
           hadith_number: number
           hindi: string | null
           id: string
+          lessons_bn: string[] | null
+          slug: string | null
+          topic_bn: string | null
           updated_at: string
+          urdu: string | null
         }
         Insert: {
           arabic: string
@@ -834,10 +839,15 @@ export type Database = {
           chapter_id: number
           created_at?: string
           english?: string | null
+          explanation_bn?: string | null
           hadith_number: number
           hindi?: string | null
           id: string
+          lessons_bn?: string[] | null
+          slug?: string | null
+          topic_bn?: string | null
           updated_at?: string
+          urdu?: string | null
         }
         Update: {
           arabic?: string
@@ -846,10 +856,15 @@ export type Database = {
           chapter_id?: number
           created_at?: string
           english?: string | null
+          explanation_bn?: string | null
           hadith_number?: number
           hindi?: string | null
           id?: string
+          lessons_bn?: string[] | null
+          slug?: string | null
+          topic_bn?: string | null
           updated_at?: string
+          urdu?: string | null
         }
         Relationships: []
       }
