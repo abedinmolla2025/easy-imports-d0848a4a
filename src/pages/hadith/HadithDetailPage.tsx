@@ -420,6 +420,56 @@ const HadithDetailPage = () => {
 
         {/* Related */}
         {related.length > 0 && (
+          <></>
+        )}
+
+        {/* Prev / Next navigation */}
+        {(prevHadith || nextHadith) && (
+          <nav
+            aria-label="Hadith navigation"
+            className="grid grid-cols-2 gap-3"
+          >
+            {prevHadith ? (
+              <Link
+                to={`/hadith/h/${prevHadith.slug}`}
+                className="flex items-center gap-2 p-4 rounded-2xl bg-card border hover:border-primary/40 transition"
+              >
+                <ChevronLeft className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    আগের হাদিস
+                  </div>
+                  <div className="text-sm font-medium text-foreground truncate">
+                    {bookLabel} {prevHadith.hadith_number}
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
+            {nextHadith ? (
+              <Link
+                to={`/hadith/h/${nextHadith.slug}`}
+                className="flex items-center justify-end gap-2 p-4 rounded-2xl bg-card border hover:border-primary/40 transition text-right"
+              >
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    পরবর্তী হাদিস
+                  </div>
+                  <div className="text-sm font-medium text-foreground truncate">
+                    {bookLabel} {nextHadith.hadith_number}
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </Link>
+            ) : (
+              <div />
+            )}
+          </nav>
+        )}
+
+        {/* Related */}
+        {related.length > 0 && (
           <section aria-labelledby="related-heading">
             <h2
               id="related-heading"
