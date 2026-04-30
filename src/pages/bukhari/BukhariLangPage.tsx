@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { ArrowLeft, Search, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, ChevronRight, Loader2, BookOpen } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +19,7 @@ interface RawHadith {
   bengali?: string;
   english?: string;
   urdu?: string;
+  slug?: string | null;
 }
 
 interface Hadith {
@@ -27,6 +28,7 @@ interface Hadith {
   number: number;
   arabic: string;
   translation: string;
+  slug?: string | null;
 }
 
 interface Chapter {
@@ -237,7 +239,7 @@ async function loadFromDb(dbField: string): Promise<Hadith[]> {
   while (hasMore) {
     const { data, error } = await (supabase as any)
       .from("hadiths")
-      .select("id, chapter_id, hadith_number, arabic, " + dbField)
+      .select("id, chapter_id, hadith_number, arabic, slug, " + dbField)
       .eq("book_key", "bukhari")
       .order("hadith_number", { ascending: true })
       .range(from, from + batchSize - 1);
@@ -256,6 +258,7 @@ async function loadFromDb(dbField: string): Promise<Hadith[]> {
           number: row.hadith_number,
           arabic: row.arabic,
           translation: row[dbField],
+          slug: row.slug ?? null,
         });
       }
     }
@@ -363,6 +366,7 @@ export default function BukhariLangPage() {
               number: h.hadith_number,
               arabic: h.arabic,
               translation: (h as any)[field] || "",
+              slug: (h as any).slug ?? null,
             }));
           processHadiths(mapped);
         })
