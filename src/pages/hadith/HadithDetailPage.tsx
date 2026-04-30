@@ -418,11 +418,6 @@ const HadithDetailPage = () => {
           </p>
         </section>
 
-        {/* Related */}
-        {related.length > 0 && (
-          <></>
-        )}
-
         {/* Prev / Next navigation */}
         {(prevHadith || nextHadith) && (
           <nav
