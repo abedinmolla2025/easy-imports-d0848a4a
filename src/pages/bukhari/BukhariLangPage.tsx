@@ -51,6 +51,7 @@ const uiStrings = {
     error: "ডাটা লোড করতে সমস্যা হয়েছে",
     noResults: "কোনো হাদিস পাওয়া যায়নি",
     loadMore: "আরও দেখুন",
+    readDetails: "📖 বিস্তারিত পড়ুন",
   },
   english: {
     title: "Sahih Al-Bukhari",
@@ -65,6 +66,7 @@ const uiStrings = {
     error: "Failed to load data",
     noResults: "No hadiths found",
     loadMore: "Load More",
+    readDetails: "📖 Read full details",
   },
   urdu: {
     title: "صحیح البخاری",
@@ -79,6 +81,7 @@ const uiStrings = {
     error: "ڈیٹا لوڈ نہیں ہو سکا",
     noResults: "کوئی حدیث نہیں ملی",
     loadMore: "مزید لوڈ کریں",
+    readDetails: "📖 تفصیل پڑھیں",
   },
 } as const;
 
