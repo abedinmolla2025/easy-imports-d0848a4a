@@ -538,6 +538,22 @@ export default function BukhariLangPage() {
                 <p className={`text-[16px] md:text-lg text-white leading-relaxed font-medium ${isRtl ? "text-right" : ""}`} dir={isRtl ? "rtl" : "ltr"}>{selectedHadith.translation}</p>
               </motion.div>
 
+              {/* Read full SEO details */}
+              <motion.a
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                href={`/hadith/h/${selectedHadith.slug || `bukhari-${selectedHadith.number}`}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(`/hadith/h/${selectedHadith.slug || `bukhari-${selectedHadith.number}`}`);
+                }}
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 text-white font-semibold border border-emerald-300/30 transition-colors"
+              >
+                <BookOpen className="w-4 h-4" />
+                {t.readDetails}
+              </motion.a>
+
               {/* Breadcrumb links */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-wrap gap-2 text-sm items-center">
                 <a href={`/hadith/sahih-bukhari/${slug}`} onClick={(e) => { e.preventDefault(); navigate(`/hadith/sahih-bukhari/${slug}`); }} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
