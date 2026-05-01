@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Search, BookOpen, ChevronRight, ArrowLeft, Sparkles, Heart, Volume2 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import DuaAudioPlayer from "@/components/DuaAudioPlayer";
@@ -64,6 +64,13 @@ const CATEGORY_TRANSLATIONS: Record<string, Record<Language, string>> = {
 const getCategoryLabel = (category: string, lang: Language): string => {
   return CATEGORY_TRANSLATIONS[category]?.[lang] || category;
 };
+
+const slugifyCategory = (s: string) =>
+  s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\u0980-\u09FF]+/g, "-")
+    .replace(/(^-+|-+$)/g, "");
 
 const UI_LABELS = {
   loading: {
@@ -439,6 +446,59 @@ const DuaPage = () => {
 
             {/* Categories */}
             {!selectedCategory && (
+              <>
+                {/* SEO category cards (link to dedicated /dua/category/:slug pages) */}
+                {!searchQuery && categories.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {categories.slice(0, 6).map((cat) => (
+                      <Link
+                        key={`seo-cat-${cat}`}
+                        to={`/dua/category/${slugifyCategory(cat)}`}
+                        className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-[hsl(45,93%,58%)]/30 transition text-center"
+                      >
+                        <p className="text-sm font-semibold text-white">
+                          {getCategoryLabel(cat, language)}
+                        </p>
+                        <p className="text-[11px] text-white/60 mt-0.5">
+                          সব দোয়া দেখুন →
+                        </p>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Featured Duas (4–6 items with slug) */}
+                {!searchQuery && (
+                  (() => {
+                    const featured = duas.filter((d) => d.slug).slice(0, 6);
+                    if (featured.length === 0) return null;
+                    return (
+                      <section className="space-y-2">
+                        <h2 className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-[hsl(45,93%,58%)]" />
+                          নির্বাচিত দোয়া
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {featured.map((d) => (
+                            <Link
+                              key={`feat-${d.id}`}
+                              to={`/dua/${d.slug}`}
+                              className="p-3 rounded-2xl bg-gradient-to-br from-[hsl(158,55%,25%)] to-[hsl(158,64%,20%)] border border-white/10 hover:border-[hsl(45,93%,58%)]/40 transition"
+                            >
+                              <p className="text-sm font-semibold text-white line-clamp-1">
+                                {d.translations[language].title}
+                              </p>
+                              <p className="text-xs text-white/60 line-clamp-1 mt-1 font-arabic">
+                                {d.arabic}
+                              </p>
+                            </Link>
+                          ))}
+                        </div>
+                      </section>
+                    );
+                  })()
+                )}
+
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -454,6 +514,7 @@ const DuaPage = () => {
                   </button>
                 ))}
               </motion.div>
+              </>
             )}
 
             {/* Dua List */}
@@ -492,6 +553,19 @@ const DuaPage = () => {
                       </div>
                       <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-[hsl(45,93%,58%)] transition-colors" />
                     </div>
+                    {dua.slug && (
+                      <span
+                        role="link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dua/${dua.slug}`);
+                        }}
+                        className="mt-3 inline-flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[hsl(45,93%,58%)]/20 text-[hsl(45,93%,58%)] text-xs font-semibold hover:bg-[hsl(45,93%,58%)]/30 transition"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        📖 বিস্তারিত পড়ুন
+                      </span>
+                    )}
                   </motion.button>
                 ))}
               </div>
