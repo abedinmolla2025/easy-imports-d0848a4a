@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Search, BookOpen, ChevronRight, ArrowLeft, Sparkles, Heart, Volume2 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import DuaAudioPlayer from "@/components/DuaAudioPlayer";
@@ -64,6 +64,13 @@ const CATEGORY_TRANSLATIONS: Record<string, Record<Language, string>> = {
 const getCategoryLabel = (category: string, lang: Language): string => {
   return CATEGORY_TRANSLATIONS[category]?.[lang] || category;
 };
+
+const slugifyCategory = (s: string) =>
+  s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\u0980-\u09FF]+/g, "-")
+    .replace(/(^-+|-+$)/g, "");
 
 const UI_LABELS = {
   loading: {
@@ -492,6 +499,19 @@ const DuaPage = () => {
                       </div>
                       <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-[hsl(45,93%,58%)] transition-colors" />
                     </div>
+                    {dua.slug && (
+                      <span
+                        role="link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dua/${dua.slug}`);
+                        }}
+                        className="mt-3 inline-flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[hsl(45,93%,58%)]/20 text-[hsl(45,93%,58%)] text-xs font-semibold hover:bg-[hsl(45,93%,58%)]/30 transition"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        📖 বিস্তারিত পড়ুন
+                      </span>
+                    )}
                   </motion.button>
                 ))}
               </div>
