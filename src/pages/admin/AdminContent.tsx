@@ -1109,7 +1109,10 @@ export default function AdminContent() {
       )}
 
       {contentTypeContext === 'hadith' ? (
-        <HadithImportPanel />
+        <div className="space-y-6">
+          <HadithSeoGeneratorPanel />
+          <HadithImportPanel />
+        </div>
       ) : contentTypeContext ? (
         <Card className="shadow-sm border-border/80">
           <CardContent className="pt-6">
