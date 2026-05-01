@@ -35,6 +35,7 @@ import {
 
 import { Plus, Edit, Trash2, Workflow, History, Activity, BookOpen, Upload, MoreVertical, Search, Download } from 'lucide-react';
 import HadithImportPanel from '@/components/admin/HadithImportPanel';
+import HadithSeoGeneratorPanel from '@/components/admin/HadithSeoGeneratorPanel';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { MobileTableWrapper } from '@/components/admin/MobileTableWrapper';
 import { NameBulkImportDialog } from '@/components/admin/NameBulkImportDialog';
