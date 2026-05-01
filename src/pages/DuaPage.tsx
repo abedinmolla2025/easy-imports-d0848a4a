@@ -447,6 +447,43 @@ const DuaPage = () => {
             {/* Categories */}
             {!selectedCategory && (
               <>
+                {/* Daily Dua — deterministic per calendar day */}
+                {!searchQuery && (() => {
+                  const slugged = duas.filter((d) => d.slug);
+                  if (slugged.length === 0) return null;
+                  const today = new Date();
+                  const dayKey =
+                    today.getFullYear() * 10000 +
+                    (today.getMonth() + 1) * 100 +
+                    today.getDate();
+                  const daily = slugged[dayKey % slugged.length];
+                  return (
+                    <Link
+                      to={`/dua/${daily.slug}`}
+                      className="block p-4 rounded-2xl bg-gradient-to-br from-[hsl(45,93%,58%)]/20 to-[hsl(45,93%,48%)]/5 border border-[hsl(45,93%,58%)]/40 hover:border-[hsl(45,93%,58%)] transition"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="w-4 h-4 text-[hsl(45,93%,58%)]" />
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[hsl(45,93%,58%)]">
+                          আজকের দোয়া
+                        </span>
+                      </div>
+                      <p className="text-base font-bold text-white line-clamp-1">
+                        {daily.translations[language].title}
+                      </p>
+                      <p
+                        dir="rtl"
+                        className="mt-2 text-sm text-white/80 font-arabic line-clamp-2 leading-loose"
+                      >
+                        {daily.arabic}
+                      </p>
+                      <p className="mt-2 text-xs text-[hsl(45,93%,58%)] font-medium">
+                        📖 বিস্তারিত পড়ুন →
+                      </p>
+                    </Link>
+                  );
+                })()}
+
                 {/* SEO category cards (link to dedicated /dua/category/:slug pages) */}
                 {!searchQuery && categories.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">

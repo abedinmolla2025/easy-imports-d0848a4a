@@ -36,6 +36,7 @@ import {
 import { Plus, Edit, Trash2, Workflow, History, Activity, BookOpen, Upload, MoreVertical, Search, Download } from 'lucide-react';
 import HadithImportPanel from '@/components/admin/HadithImportPanel';
 import HadithSeoGeneratorPanel from '@/components/admin/HadithSeoGeneratorPanel';
+import DuaSeoGeneratorPanel from '@/components/admin/DuaSeoGeneratorPanel';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { MobileTableWrapper } from '@/components/admin/MobileTableWrapper';
 import { NameBulkImportDialog } from '@/components/admin/NameBulkImportDialog';
@@ -1106,6 +1107,12 @@ export default function AdminContent() {
           disabledReview={!canEdit}
           disabledPublish={!canApprove}
         />
+      )}
+
+      {contentTypeContext === 'dua' && (
+        <div className="mb-6">
+          <DuaSeoGeneratorPanel />
+        </div>
       )}
 
       {contentTypeContext === 'hadith' ? (
